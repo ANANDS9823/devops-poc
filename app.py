@@ -9,7 +9,7 @@ load_dotenv()
 app = Flask(__name__)
 
 def get_ssm_parameter(name):
-    ssm = boto3.client("ssm", region_name=os.getenv("AWS_DEFAULT_REGION", "ap-south-1"))
+    ssm = boto3.client("ssm", region_name=os.getenv("AWS_REGION", "ap-south-1"))
     response = ssm.get_parameter(Name=name, WithDecryption=True)
     return response["Parameter"]["Value"]
 
