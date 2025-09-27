@@ -11,7 +11,7 @@ jobs:
 
     env:
       IMAGE_TAG: latest
-      ECR_REPO: devops-poc
+      ECR_REPO: devops-repo
 
     steps:
       - name: Checkout code
