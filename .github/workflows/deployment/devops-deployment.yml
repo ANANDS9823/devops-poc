@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: devops-repo-container
-        image: devops-repo:latest  # Replace with your Docker image
+        image: 298715240392.dkr.ecr.ap-south-1.amazonaws.com/devops-repo:latest  # Replace with your Docker image
         ports:
         - containerPort: 5000  # Replace with the port your app runs on
