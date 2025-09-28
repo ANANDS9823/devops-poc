@@ -54,7 +54,7 @@ jobs:
 
       - name: Deploy to EKS
         run: |
-          kubectl apply -f ./deployment/devops-deployment.yml
-          kubectl apply -f ./deployment/devops-service.yml
+          kubectl apply -f ./.github/workflows/deployment/devops-deployment.yml
+          kubectl apply -f ./.github/workflows/deployment/devops-service.yml
 
           
