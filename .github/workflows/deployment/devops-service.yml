@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-service
+  labels:
+    app: devops-repo
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 5000  # Replace with the port your app runs on
+  selector:
+    app: devops-repo

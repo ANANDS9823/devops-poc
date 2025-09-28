@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-repo
+  labels:
+    app: devops-repo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: devops-repo
+  template:
+    metadata:
+      labels:
+        app: devops-repo-pod
+    spec:
+      containers:
+      - name: devops-repo-container
+        image: devops-repo:latest  # Replace with your Docker image
+        ports:
+        - containerPort: 5000  # Replace with the port your app runs on
