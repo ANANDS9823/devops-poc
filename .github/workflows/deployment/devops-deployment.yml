@@ -12,7 +12,7 @@ spec:
   template:
     metadata:
       labels:
-        app: devops-repo-pod
+        app: devops-repo
     spec:
       containers:
       - name: devops-repo-container
