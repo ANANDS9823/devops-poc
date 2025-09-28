@@ -24,7 +24,7 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.8.1"
 
-  name = "dovops-vpc"
+  name = "devops-vpc"
 
   cidr = "10.0.0.0/16"
   azs  = slice(data.aws_availability_zones.available.names, 0, 3)
@@ -45,6 +45,18 @@ module "vpc" {
   }
 }
 
+resource "aws_ecr_repository" "app_repo" {
+  name         = "devops-repo"
+  force_delete = true
+
+  image_tag_mutability = "MUTABLE"  # or "IMMUTABLE"
+
+  tags = {
+    Environment = "dev"
+    Project     = "devops-repo"
+  }
+}
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.8.5"
@@ -54,6 +66,7 @@ module "eks" {
 
   cluster_endpoint_public_access           = true
   enable_cluster_creator_admin_permissions = true
+  enable_irsa = true
 
   cluster_addons = {
     aws-ebs-csi-driver = {
@@ -63,6 +76,20 @@ module "eks" {
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
+
+  cluster_enabled_log_types = [
+    "api",
+    "audit",
+    "authenticator",
+    "controllerManager",
+    "scheduler"
+  ]
+
+  set {
+    name  = "cloudWatch.logGroupName"
+    value = "/eks/app-logs"
+  }
+
 
   eks_managed_node_group_defaults = {
     ami_type = "AL2_x86_64"
@@ -75,6 +102,10 @@ module "eks" {
 
       instance_types = ["t3.small"]
 
+      iam_role_additional_policies = {
+        ssm_access = aws_iam_policy.ssm_access.arn
+      }
+
       min_size     = 1
       max_size     = 3
       desired_size = 2
@@ -84,6 +115,10 @@ module "eks" {
       name = "node-group-2"
 
       instance_types = ["t3.small"]
+
+      iam_role_additional_policies = {
+        ssm_access = aws_iam_policy.ssm_access.arn
+      }
 
       min_size     = 1
       max_size     = 2
@@ -107,3 +142,23 @@ module "irsa-ebs-csi" {
   role_policy_arns              = [data.aws_iam_policy.ebs_csi_policy.arn]
   oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
 }
+
+data "aws_caller_identity" "current" {}
+
+resource "aws_iam_policy" "ssm_access" {
+  name        = "eks-nodegroup-ssm-access"
+  description = "Allow EKS nodes to access SSM parameter"
+  policy      = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "ssm:GetParameter"
+        ],
+        Resource = "arn:aws:ssm:ap-south-1:${data.aws_caller_identity.current.account_id}:parameter/hello-world/message"
+      }
+    ]
+  })
+}
+
